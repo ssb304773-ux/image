@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Background Remover</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:'Poppins',sans-serif;
+}
+
+body{
+
+background:linear-gradient(135deg,#0f172a,#1e293b);
+color:white;
+min-height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
+
+}
+
+.container{
+
+width:90%;
+max-width:900px;
+background:#ffffff10;
+backdrop-filter:blur(15px);
+padding:40px;
+border-radius:20px;
+text-align:center;
+box-shadow:0 0 30px rgba(0,0,0,.4);
+
+}
+
+h1{
+
+font-size:40px;
+margin-bottom:10px;
+
+}
+
+p{
+
+opacity:.8;
+margin-bottom:30px;
+
+}
+
+.upload{
+
+border:2px dashed #38bdf8;
+padding:50px;
+border-radius:15px;
+cursor:pointer;
+transition:.3s;
+
+}
+
+.upload:hover{
+
+background:#38bdf820;
+
+}
+
+input{
+
+display:none;
+
+}
+
+button{
+
+margin-top:25px;
+padding:15px 35px;
+border:none;
+border-radius:50px;
+background:#38bdf8;
+color:white;
+font-size:18px;
+cursor:pointer;
+transition:.3s;
+
+}
+
+button:hover{
+
+transform:scale(1.05);
+
+}
+
+img{
+
+max-width:100%;
+margin-top:30px;
+border-radius:15px;
+display:none;
+
+}
+
+footer{
+
+margin-top:30px;
+opacity:.6;
+
+}
+
+</style>
+
+</head>
+<body>
+
+<div class="container">
+
+<h1>AI Background Remover</h1>
+
+<p>Upload your image and remove the background instantly.</p>
+
+<label class="upload">
+
+<input type="file" id="imageInput" accept="image/*">
+
+Click Here to Upload Image
+
+</label>
+
+<img id="preview">
+
+<br>
+
+<button onclick="removeBG()">
+Remove Background
+</button>
+
+<footer>
+
+Made with ❤️ | GitHub Pages
+
+</footer>
+
+</div>
+
+<script>
+
+const input=document.getElementById("imageInput");
+const preview=document.getElementById("preview");
+
+input.onchange=e=>{
+
+const file=e.target.files[0];
+
+if(file){
+
+preview.src=URL.createObjectURL(file);
+preview.style.display="block";
+
+}
+
+}
+
+function removeBG(){
+
+alert("Connect this button to an AI Background Removal API such as remove.bg or Clipdrop. GitHub Pages alone cannot remove backgrounds because it has no backend.");
+
+}
+
+</script>
+
+</body>
+</html>
