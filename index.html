@@ -1,176 +1,224 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI Background Remover</title>
-
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
-
-<style>
-
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
-font-family:'Poppins',sans-serif;
-}
-
-body{
-
-background:linear-gradient(135deg,#0f172a,#1e293b);
-color:white;
-min-height:100vh;
-display:flex;
-justify-content:center;
-align-items:center;
-
-}
-
-.container{
-
-width:90%;
-max-width:900px;
-background:#ffffff10;
-backdrop-filter:blur(15px);
-padding:40px;
-border-radius:20px;
-text-align:center;
-box-shadow:0 0 30px rgba(0,0,0,.4);
-
-}
-
-h1{
-
-font-size:40px;
-margin-bottom:10px;
-
-}
-
-p{
-
-opacity:.8;
-margin-bottom:30px;
-
-}
-
-.upload{
-
-border:2px dashed #38bdf8;
-padding:50px;
-border-radius:15px;
-cursor:pointer;
-transition:.3s;
-
-}
-
-.upload:hover{
-
-background:#38bdf820;
-
-}
-
-input{
-
-display:none;
-
-}
-
-button{
-
-margin-top:25px;
-padding:15px 35px;
-border:none;
-border-radius:50px;
-background:#38bdf8;
-color:white;
-font-size:18px;
-cursor:pointer;
-transition:.3s;
-
-}
-
-button:hover{
-
-transform:scale(1.05);
-
-}
-
-img{
-
-max-width:100%;
-margin-top:30px;
-border-radius:15px;
-display:none;
-
-}
-
-footer{
-
-margin-top:30px;
-opacity:.6;
-
-}
-
-</style>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Click & Rename Image Tool</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #f4f6f9;
+            color: #333;
+            margin: 0;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            max-width: 600px;
+            width: 100%;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            text-align: center;
+        }
+        h1 {
+            margin-top: 0;
+            font-size: 24px;
+            color: #1a1a1a;
+        }
+        p {
+            color: #666;
+            font-size: 14px;
+        }
+        .upload-zone {
+            border: 2px dashed #cbd5e1;
+            padding: 30px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            background: #f8fafc;
+            transition: background 0.2s, border-color 0.2s;
+        }
+        .upload-zone:hover {
+            background: #f1f5f9;
+            border-color: #94a3b8;
+        }
+        input[type="file"] {
+            display: none;
+        }
+        .preview-area {
+            margin-top: 25px;
+            display: none;
+        }
+        .image-wrapper {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+            border-radius: 6px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            max-width: 100%;
+        }
+        .image-wrapper img {
+            max-width: 100%;
+            max-height: 400px;
+            display: block;
+            transition: opacity 0.2s;
+        }
+        .image-wrapper:hover img {
+            opacity: 0.9;
+        }
+        .image-wrapper::after {
+            content: "Click Image to Rename";
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.4);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            font-weight: 600;
+            font-size: 16px;
+            transition: opacity 0.2s;
+        }
+        .image-wrapper:hover::after {
+            opacity: 1;
+        }
+        .meta-box {
+            margin-top: 15px;
+            background: #f1f5f9;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            word-break: break-all;
+        }
+        .filename-display {
+            font-weight: bold;
+            color: #0f172a;
+        }
+        .btn-download {
+            display: inline-block;
+            margin-top: 15px;
+            background-color: #2563eb;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+        .btn-download:hover {
+            background-color: #1d4ed8;
+        }
+    </style>
 </head>
 <body>
 
 <div class="container">
+    <h1>Image Click & Rename Tool</h1>
+    <p>Upload an image, then click directly on the preview to assign a new name.</p>
+    
+    <div class="upload-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+        <span style="font-size: 32px;">📷</span>
+        <p style="margin: 10px 0 0 0; font-weight: 500;">Click or Drag & Drop to upload image</p>
+        <input type="file" id="fileInput" accept="image/*">
+    </div>
 
-<h1>AI Background Remover</h1>
+    <div class="preview-area" id="previewArea">
+        <div class="image-wrapper" id="imageWrapper" title="Click to Rename">
+            <img id="imageDisplay" src="" alt="Preview">
+        </div>
+        
+        <div class="meta-box">
+            Current Filename: <span id="filenameDisplay" class="filename-display"></span>
+        </div>
 
-<p>Upload your image and remove the background instantly.</p>
-
-<label class="upload">
-
-<input type="file" id="imageInput" accept="image/*">
-
-Click Here to Upload Image
-
-</label>
-
-<img id="preview">
-
-<br>
-
-<button onclick="removeBG()">
-Remove Background
-</button>
-
-<footer>
-
-Made with ❤️ | GitHub Pages
-
-</footer>
-
+        <a id="downloadLink" class="btn-download" href="#" download="">Download Renamed Image</a>
+    </div>
 </div>
 
 <script>
+    const fileInput = document.getElementById('fileInput');
+    const dropZone = document.getElementById('dropZone');
+    const previewArea = document.getElementById('previewArea');
+    const imageDisplay = document.getElementById('imageDisplay');
+    const imageWrapper = document.getElementById('imageWrapper');
+    const filenameDisplay = document.getElementById('filenameDisplay');
+    const downloadLink = document.getElementById('downloadLink');
 
-const input=document.getElementById("imageInput");
-const preview=document.getElementById("preview");
+    let currentFile = null;
+    let fileExtension = '';
 
-input.onchange=e=>{
+    // Handle File Selection
+    fileInput.addEventListener('change', (e) => {
+        handleFiles(e.target.files);
+    });
 
-const file=e.target.files[0];
+    // Drag & Drop event handlers
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.style.borderColor = '#2563eb';
+    });
 
-if(file){
+    dropZone.addEventListener('dragleave', () => {
+        dropZone.style.borderColor = '#cbd5e1';
+    });
 
-preview.src=URL.createObjectURL(file);
-preview.style.display="block";
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.style.borderColor = '#cbd5e1';
+        handleFiles(e.dataTransfer.files);
+    });
 
-}
+    function handleFiles(files) {
+        if (files.length === 0) return;
+        
+        const file = files[0];
+        if (!file.type.startsWith('image/')) {
+            alert('Please upload an image file.');
+            return;
+        }
 
-}
+        currentFile = file;
+        
+        // Extract original file name and extension
+        const lastDot = file.name.lastIndexOf('.');
+        fileExtension = lastDot !== -1 ? file.name.substring(lastDot) : '';
+        
+        // Show Image Preview
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            imageDisplay.src = e.target.result;
+            filenameDisplay.textContent = file.name;
+            
+            // Set up initial download properties
+            downloadLink.href = e.target.result;
+            downloadLink.download = file.name;
+            
+            previewArea.style.display = 'block';
+        }
+        reader.readAsDataURL(file);
+    }
 
-function removeBG(){
+    // Trigger Rename Window when clicking the image
+    imageWrapper.addEventListener('click', () => {
+        if (!currentFile) return;
 
-alert("Connect this button to an AI Background Removal API such as remove.bg or Clipdrop. GitHub Pages alone cannot remove backgrounds because it has no backend.");
-
-}
-
+        // strip extension for cleaner user editing experience
+        const currentCleanName = filenameDisplay.textContent.replace(fileExtension, '');
+        
+        const newName = prompt("Enter a new name for your image:", currentCleanName);
+        
+        // Check if user cancelled or provided empty string
+        if (newName !== null && newName.trim() !== "") {
+            const sanitizedName = newName.trim() + fileExtension;
+            filenameDisplay.textContent = sanitizedName;
+            downloadLink.download = sanitizedName;
+        }
+    });
 </script>
 
 </body>
