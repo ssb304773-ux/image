@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Camera Click & Rename Tool</title>
+    <title>Camera Click, Rename & Auto Download</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -55,7 +55,7 @@
             opacity: 0.9;
         }
         .image-wrapper::after {
-            content: "Click Image to Rename ✏️";
+            content: "Click Image to Rename & Redownload ✏️";
             position: absolute;
             top: 0;
             left: 0;
@@ -130,7 +130,7 @@
 <body>
     <div class="container">
         <h1>Camera Click & Rename</h1>
-        <p>कैमरा चालू करें, फोटो क्लिक करें और नाम बदलकर डाउनलोड करें।</p>
+        <p>फोटो क्लिक करें, नाम डालें और तुरंत ऑटो-डाउनलोड करें।</p>
         
         <div class="image-wrapper" id="wrapper">
             <!-- Live Camera Stream -->
@@ -143,13 +143,17 @@
         <canvas id="canvas" style="display:none;"></canvas>
         
         <button id="captureBtn" class="btn btn-capture">📸 Take Photo</button>
-        <button id="retakeBtn" class="btn btn-retake">🔄 Retake Photo</button>
+        <button id="retakeBtn" class="btn btn-retake">🔄 Retake / New Photo</button>
         
         <div class="meta-box" id="metaBox">
-            Filename: <span id="filenameDisplay" class="filename-display">captured_image.png</span>
+            Downloaded As: <span id="filenameDisplay" class="filename-display">captured_image.png</span>
         </div>
         
-        <a id="downloadLink" class="btn btn-download" href="#">⬇️ Download Image</a>
+        <!-- Hidden download link for programmatic trigger -->
+        <a id="downloadLink" style="display: none;"></a>
+        
+        <!-- Manual download button as backup/secondary option -->
+        <button id="manualDownloadBtn" class="btn btn-download">⬇️ Download Again</button>
     </div>
 
     <script>
@@ -158,6 +162,7 @@
         const captureBtn = document.getElementById('captureBtn');
         const retakeBtn = document.getElementById('retakeBtn');
         const downloadLink = document.getElementById('downloadLink');
+        const manualDownloadBtn = document.getElementById('manualDownloadBtn');
         const filenameDisplay = document.getElementById('filenameDisplay');
         const metaBox = document.getElementById('metaBox');
         const wrapper = document.getElementById('wrapper');
@@ -180,6 +185,13 @@
             }
         }
 
+        // Auto Trigger Download Function
+        function triggerDownload(dataUrl, fileName) {
+            downloadLink.href = dataUrl;
+            downloadLink.download = fileName;
+            downloadLink.click(); // Automatically clicks the invisible link to download
+        }
+
         // Capture Image
         captureBtn.addEventListener('click', () => {
             const width = cameraView.videoWidth;
@@ -199,41 +211,45 @@
             cameraView.style.display = 'none';
             wrapper.classList.add('preview-active');
 
-            // Trigger prompt immediately after click (Input field starts completely blank "")
+            // Prompt user for name immediately (starts blank)
             const newName = prompt("फोटो का नाम डालें (Enter file name):", "");
             
             if (newName !== null && newName.trim() !== "") {
                 baseFileName = newName.trim();
             } else {
-                // If user cancels or leaves it empty, assign a unique timestamp name
                 baseFileName = "image_" + Date.now();
             }
 
-            // Setup filename and downloads
             const fullTargetName = baseFileName + fileExtension;
             filenameDisplay.textContent = fullTargetName;
-            downloadLink.href = dataUrl;
-            downloadLink.download = fullTargetName;
 
-            // Toggle Buttons
+            // Toggle UI Elements
             captureBtn.style.display = 'none';
             retakeBtn.style.display = 'block';
-            downloadLink.style.display = 'block';
+            manualDownloadBtn.style.display = 'block';
             metaBox.style.display = 'block';
+
+            // TRIGGER IMMEDIATE AUTO DOWNLOAD HERE
+            triggerDownload(dataUrl, fullTargetName);
         });
 
-        // Rename again if clicking the captured photo
+        // Manual redownload/rename when clicking manual button
+        manualDownloadBtn.addEventListener('click', () => {
+            triggerDownload(photoPreview.src, baseFileName + fileExtension);
+        });
+
+        // Rename & redownload if clicking the captured photo preview
         photoPreview.addEventListener('click', () => {
             const newName = prompt("फोटो का नया नाम डालें (Enter new name):", baseFileName);
             if (newName !== null && newName.trim() !== "") {
                 baseFileName = newName.trim();
                 const fullTargetName = baseFileName + fileExtension;
                 filenameDisplay.textContent = fullTargetName;
-                downloadLink.download = fullTargetName;
+                triggerDownload(photoPreview.src, fullTargetName);
             }
         });
 
-        // Retake / Reset View
+        // Retake / Reset View for next photo
         retakeBtn.addEventListener('click', () => {
             photoPreview.style.display = 'none';
             cameraView.style.display = 'block';
@@ -241,7 +257,7 @@
             
             captureBtn.style.display = 'block';
             retakeBtn.style.display = 'none';
-            downloadLink.style.display = 'none';
+            manualDownloadBtn.style.display = 'none';
             metaBox.style.display = 'none';
             baseFileName = "";
         });
