@@ -57,7 +57,10 @@
         .image-wrapper::after {
             content: "Click Image to Rename ✏️";
             position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
             background: rgba(0, 0, 0, 0.4);
             color: white;
             display: flex;
@@ -125,119 +128,126 @@
     </style>
 </head>
 <body>
-
-<div class="container">
-    <h1>Camera Click & Rename</h1>
-    <p>कैमरा चालू करें, फोटो क्लिक करें और नाम बदलकर डाउनलोड करें।</p>
-    
-    <div class="image-wrapper" id="wrapper">
-        <!-- Live Camera Stream -->
-        <video id="cameraView" autoplay playsinline></video>
-        <!-- Captured Photo Preview -->
-        <img id="photoPreview" alt="Captured Photo">
+    <div class="container">
+        <h1>Camera Click & Rename</h1>
+        <p>कैमरा चालू करें, फोटो क्लिक करें और नाम बदलकर डाउनलोड करें।</p>
+        
+        <div class="image-wrapper" id="wrapper">
+            <!-- Live Camera Stream -->
+            <video id="cameraView" autoplay playsinline></video>
+            <!-- Captured Photo Preview -->
+            <img id="photoPreview" alt="Captured Photo">
+        </div>
+        
+        <!-- Hidden Canvas for capturing image -->
+        <canvas id="canvas" style="display:none;"></canvas>
+        
+        <button id="captureBtn" class="btn btn-capture">📸 Take Photo</button>
+        <button id="retakeBtn" class="btn btn-retake">🔄 Retake Photo</button>
+        
+        <div class="meta-box" id="metaBox">
+            Filename: <span id="filenameDisplay" class="filename-display">captured_image.png</span>
+        </div>
+        
+        <a id="downloadLink" class="btn btn-download" href="#">⬇️ Download Image</a>
     </div>
 
-    <!-- Hidden Canvas for capturing image -->
-    <canvas id="canvas" style="display:none;"></canvas>
+    <script>
+        const cameraView = document.getElementById('cameraView');
+        const photoPreview = document.getElementById('photoPreview');
+        const captureBtn = document.getElementById('captureBtn');
+        const retakeBtn = document.getElementById('retakeBtn');
+        const downloadLink = document.getElementById('downloadLink');
+        const filenameDisplay = document.getElementById('filenameDisplay');
+        const metaBox = document.getElementById('metaBox');
+        const wrapper = document.getElementById('wrapper');
+        const canvas = document.getElementById('canvas');
 
-    <button id="captureBtn" class="btn btn-capture">📸 Take Photo</button>
-    <button id="retakeBtn" class="btn btn-retake">🔄 Retake Photo</button>
-    
-    <div class="meta-box" id="metaBox">
-        Filename: <span id="filenameDisplay" class="filename-display">captured_image.png</span>
-    </div>
+        let stream = null;
+        let baseFileName = "";
+        const fileExtension = ".png";
 
-    <a id="downloadLink" class="btn btn-download" href="#">⬇️ Download Image</a>
-</div>
-
-<script>
-    const cameraView = document.getElementById('cameraView');
-    const photoPreview = document.getElementById('photoPreview');
-    const captureBtn = document.getElementById('captureBtn');
-    const retakeBtn = document.getElementById('retakeBtn');
-    const downloadLink = document.getElementById('downloadLink');
-    const filenameDisplay = document.getElementById('filenameDisplay');
-    const metaBox = document.getElementById('metaBox');
-    const wrapper = document.getElementById('wrapper');
-    const canvas = document.getElementById('canvas');
-
-    let stream = null;
-    let baseFileName = "captured_image";
-    const fileExtension = ".png";
-
-    // Camera Access Start
-    async function startCamera() {
-        try {
-            stream = await navigator.mediaDevices.getUserMedia({ 
-                video: { facingMode: "environment" }, // back camera prefer code for mobile
-                audio: false 
-            });
-            cameraView.srcObject = stream;
-        } catch (err) {
-            alert("Camera access denied or not available: " + err.message);
+        // Camera Access Start
+        async function startCamera() {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: "environment" }, 
+                    audio: false 
+                });
+                cameraView.srcObject = stream;
+            } catch (err) {
+                alert("Camera access denied or not available: " + err.message);
+            }
         }
-    }
 
-    // Capture Image
-    captureBtn.addEventListener('click', () => {
-        const width = cameraView.videoWidth;
-        const height = cameraView.videoHeight;
-        
-        canvas.width = width;
-        canvas.height = height;
-        
-        const context = canvas.getContext('2d');
-        // If front camera mirror effect is needed, context manipulation can go here
-        context.drawImage(cameraView, 0, 0, width, height);
-        
-        // Convert to data URL
-        const dataUrl = canvas.toDataURL('image/png');
-        
-        // Show Image, Hide Video
-        photoPreview.src = dataUrl;
-        photoPreview.style.display = 'block';
-        cameraView.style.display = 'none';
-        wrapper.classList.add('preview-active');
-        
-        // Setup default filename and downloads
-        baseFileName = "captured_" + Date.now();
-        filenameDisplay.textContent = baseFileName + fileExtension;
-        downloadLink.href = dataUrl;
-        downloadLink.download = baseFileName + fileExtension;
-        
-        // Toggle Buttons
-        captureBtn.style.display = 'none';
-        retakeBtn.style.display = 'block';
-        downloadLink.style.display = 'block';
-        metaBox.style.display = 'block';
-    });
+        // Capture Image
+        captureBtn.addEventListener('click', () => {
+            const width = cameraView.videoWidth;
+            const height = cameraView.videoHeight;
+            canvas.width = width;
+            canvas.height = height;
+            
+            const context = canvas.getContext('2d');
+            context.drawImage(cameraView, 0, 0, width, height);
+            
+            // Convert to data URL
+            const dataUrl = canvas.toDataURL('image/png');
+            
+            // Show Image, Hide Video
+            photoPreview.src = dataUrl;
+            photoPreview.style.display = 'block';
+            cameraView.style.display = 'none';
+            wrapper.classList.add('preview-active');
 
-    // Rename when clicking the captured photo
-    photoPreview.addEventListener('click', () => {
-        const newName = prompt("फोटो का नया नाम डालें (Enter new name):", baseFileName);
-        if (newName !== null && newName.trim() !== "") {
-            baseFileName = newName.trim();
+            // Trigger prompt immediately after click (Input field starts completely blank "")
+            const newName = prompt("फोटो का नाम डालें (Enter file name):", "");
+            
+            if (newName !== null && newName.trim() !== "") {
+                baseFileName = newName.trim();
+            } else {
+                // If user cancels or leaves it empty, assign a unique timestamp name
+                baseFileName = "image_" + Date.now();
+            }
+
+            // Setup filename and downloads
             const fullTargetName = baseFileName + fileExtension;
             filenameDisplay.textContent = fullTargetName;
+            downloadLink.href = dataUrl;
             downloadLink.download = fullTargetName;
-        }
-    });
 
-    // Retake / Reset View
-    retakeBtn.addEventListener('click', () => {
-        photoPreview.style.display = 'none';
-        cameraView.style.display = 'block';
-        wrapper.classList.remove('preview-active');
-        
-        captureBtn.style.display = 'block';
-        retakeBtn.style.display = 'none';
-        downloadLink.style.display = 'none';
-        metaBox.style.display = 'none';
-    });
+            // Toggle Buttons
+            captureBtn.style.display = 'none';
+            retakeBtn.style.display = 'block';
+            downloadLink.style.display = 'block';
+            metaBox.style.display = 'block';
+        });
 
-    // Start Camera on load
-    window.addEventListener('load', startCamera);
-</script>
+        // Rename again if clicking the captured photo
+        photoPreview.addEventListener('click', () => {
+            const newName = prompt("फोटो का नया नाम डालें (Enter new name):", baseFileName);
+            if (newName !== null && newName.trim() !== "") {
+                baseFileName = newName.trim();
+                const fullTargetName = baseFileName + fileExtension;
+                filenameDisplay.textContent = fullTargetName;
+                downloadLink.download = fullTargetName;
+            }
+        });
 
+        // Retake / Reset View
+        retakeBtn.addEventListener('click', () => {
+            photoPreview.style.display = 'none';
+            cameraView.style.display = 'block';
+            wrapper.classList.remove('preview-active');
+            
+            captureBtn.style.display = 'block';
+            retakeBtn.style.display = 'none';
+            downloadLink.style.display = 'none';
+            metaBox.style.display = 'none';
+            baseFileName = "";
+        });
+
+        // Start Camera on load
+        window.addEventListener('load', startCamera);
+    </script>
 </body>
 </html>
